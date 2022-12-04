@@ -2,18 +2,9 @@ package main
 
 import (
 	"fmt"
-	"math"
 	"os"
 	"strings"
 )
-
-type move int64
-
-type play struct {
-	name  string
-	code  move
-	score int
-}
 
 func check(e error) {
 	if e != nil {
@@ -21,7 +12,7 @@ func check(e error) {
 	}
 }
 
-func movesToInt(moves []string) []int {
+func playToInt(moves []string) []int {
 	var movesInt = make([]int, len(moves))
 	for i := 0; i < len(moves); i++ {
 		if (moves[i] == "A") || (moves[i] == "X") {
@@ -36,26 +27,37 @@ func movesToInt(moves []string) []int {
 	}
 	return movesInt
 }
-func playGame(p1, p2 int) int {
-	var diff = p1 - p2
-	var winner int
-	if diff < 0 {
-		diff = -diff
+
+func playGame(p1, outcome int) int {
+	var score = 0
+	if outcome == 1 {
+		score = lostRound(p1)
+	} else if outcome == 2 {
+		score = tieRound(p1)
+	} else if outcome == 3 {
+		score = wonRound(p1)
 	}
-	if diff == 0 {
-		return p2 + 3
-	} else if diff == 1 {
-		winner = int(math.Max(float64(p1), float64(p2)))
-	} else if diff == 2 {
-		winner = int(math.Min(float64(p1), float64(p2)))
-	} else {
-		panic("Invalid diff")
+	return score
+}
+
+func lostRound(p1 int) int {
+	var score = p1 - 1
+	if score <= 0 {
+		score = 3
 	}
-	if winner == p2 {
-		return p2 + 6
-	} else {
-		return p2
+	return score
+}
+
+func tieRound(p1 int) int {
+	return p1 + 3
+}
+
+func wonRound(p1 int) int {
+	var score = p1 + 1
+	if score > 3 {
+		score = 1
 	}
+	return score + 6
 }
 
 func main() {
@@ -65,9 +67,9 @@ func main() {
 	var plays = strings.Split(string(f), "\n")
 	var score = 0
 	for i := 0; i < len(plays); i++ {
-		var moves = strings.Split(plays[i], " ")
-		var movesInt = movesToInt(moves)
-		score += playGame(movesInt[0], movesInt[1])
+		var play = strings.Split(plays[i], " ")
+		var playInt = playToInt(play)
+		score += playGame(playInt[0], playInt[1])
 	}
 	fmt.Println("Score:", score)
 }
