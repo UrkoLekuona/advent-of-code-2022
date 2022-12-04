@@ -7,6 +7,11 @@ import (
 	"strings"
 )
 
+type elf struct {
+	index int
+	total int
+}
+
 func check(e error) {
 	if e != nil {
 		panic(e)
@@ -24,19 +29,33 @@ func countTotal(elementString string) int {
 	return total
 }
 
+func minOfThree(topThree []elf) (elf, int) {
+	var min = topThree[0]
+	var minIndex = 0
+	for i := 1; i < len(topThree); i++ {
+		if topThree[i].total < min.total {
+			min = topThree[i]
+			minIndex = i
+		}
+	}
+	return min, minIndex
+}
+
 func main() {
 	f, err := os.ReadFile("input.txt")
 	check(err)
 
 	var elfArray = strings.Split(string(f), "\n\n")
-	var max = 0
-	var maxIndex = -1
+	var smallestOfTopThree elf = elf{-1, 0}
+	var topThree = make([]elf, 3)
+	var smallestOfTopThreeIndex = 0
 	for i := 0; i < len(elfArray); i++ {
 		var current = countTotal(elfArray[i])
-		if current > max {
-			max = current
-			maxIndex = i
+		if current > smallestOfTopThree.total {
+			topThree[smallestOfTopThreeIndex] = elf{i, current}
+			smallestOfTopThree, smallestOfTopThreeIndex = minOfThree(topThree)
 		}
 	}
-	fmt.Println("The elf carrying the most calories is number", maxIndex+1, "with", max, "calories.")
+	var totalCalories = topThree[0].total + topThree[1].total + topThree[2].total
+	fmt.Println("The top three elfs carrying the most calories are numbers", topThree[0].index+1, ",", topThree[1].index+1, "and", topThree[2].index+1, "with a total of", totalCalories, "calories.")
 }
